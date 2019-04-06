@@ -1,0 +1,80 @@
+---
+title: "Enrollment Graphic"
+author: "Nicholas Dow"
+date: "April 6, 2019"
+output: html_document
+---
+
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+library(dplyr)
+
+# dplyr for general data manipulation
+
+library(ggplot2)
+
+# ggplot2 for visualization of data
+
+library(ggridges)
+
+# ggridges for a specific kind of visual display
+
+library(viridis)
+
+# viridis to get gradient of colors in visual display
+
+library(janitor)
+
+# janitor to clean up data from xlxs file
+
+library(readxl)
+
+# readxl to get data out of xlxs file
+
+harvard_enrollment <- read_excel("ps_3_enrollment.xlsx", skip=3) %>% 
+  
+  # We read the file, and skip 3 lines because there is junk data there
+  
+  clean_names() %>% 
+  
+  # We clean the names using the janitor pack, so that the data is easy to use
+  
+  filter(! is.na(course_section_code)) %>%
+  
+  # We throw out misc classes as specified by the pset
+  
+  filter(u_grad > 5) %>% 
+  
+  # We filter out classes that are less than 5 people as specified
+  
+  filter(u_grad/total > .5)
+  
+  # We filter out classes that are not majority undergrad
+
+harvard_enrollment %>% 
+  filter(course_department %in% c("Statistics","Mathematics","Government","Expository Writing","Economics","Computer Science")) %>% 
+  
+  # I filter the dataset for the dept factors that I want, in the order that I want them
+  
+  ggplot(aes( x = u_grad, y = course_department)) +
+  
+  # I set the x and y axis of the graph
+  
+  geom_density_ridges_gradient(aes(fill = ..x..)) +
+  
+  # I call the special ridges plot to make my visualization look cool
+  
+  scale_x_log10() +
+  
+  # I scale the x axis so that it can convey information about the distribution of both small and very large classes that are typical at harvard
+  labs(title = "Course enrollments Spring 2019",
+       subtitle = "Departments vary in their typical Class sizes",
+       caption = "Source: Harvard Registrar") +
+  xlab("Class Size") +
+  ylab(NULL) +
+  
+  # I set the labs of all the information on the graph to get it to match
+  
+  scale_fill_viridis(guide = FALSE, option = "C") 
+
+  # I add a gradient to the plot that doesnt have a guide
+```
